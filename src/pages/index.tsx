@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Stack } from "@chakra-ui/react";
 import {
   collection,
@@ -9,18 +8,19 @@ import {
   where,
 } from "firebase/firestore";
 import type { NextPage } from "next";
+import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { Post, PostVote } from "../atoms/postAtom";
+import { Post, PostVote } from "../atoms/postsAtom";
 import CreatePostLink from "../components/Community/CreatePostLink";
-import PageContentLayout from "../components/Layout/PageContent";
-import PostLoader from "../components/Posts/PostLoader";
-import PostItem from "../components/Posts/PostItem";
-import { auth, firestore } from "../firebase/clientApp";
-import usePosts from "../hooks/usePosts";
-import useCommunityData from "../hooks/useCommunityData";
-import Recommendations from "../components/Community/Recommendations";
-import Premium from "../components/Community/Premium";
 import PersonalHome from "../components/Community/PersonalHome";
+import Premium from "../components/Community/Premium";
+import Recommendations from "../components/Community/Recommendations";
+import PageContent from "../components/Layout/PageContent";
+import PostItem from "../components/Posts/PostItem";
+import PostLoader from "../components/Posts/PostLoader";
+import { auth, firestore } from "../firebase/clientApp";
+import useCommunityData from "../hooks/useCommunityData";
+import usePosts from "../hooks/usePosts";
 
 const Home: NextPage = () => {
   const [user, loadingUser] = useAuthState(auth);
@@ -28,22 +28,20 @@ const Home: NextPage = () => {
   const {
     postStateValue,
     setPostStateValue,
-    onVote,
     onSelectPost,
     onDeletePost,
+    onVote,
   } = usePosts();
-
   const { communityStateValue } = useCommunityData();
 
-  const getUserHomePosts = async () => {
+  const buildUserHomeFeed = async () => {
     setLoading(true);
     try {
-      // User has joined communities
       if (communityStateValue.mySnippets.length) {
+        // get posts from users' communities
         const myCommunityIds = communityStateValue.mySnippets.map(
           (snippet) => snippet.communityId
         );
-
         const postQuery = query(
           collection(firestore, "posts"),
           where("communityId", "in", myCommunityIds),
@@ -54,23 +52,20 @@ const Home: NextPage = () => {
           id: doc.id,
           ...doc.data(),
         }));
-
         setPostStateValue((prev) => ({
           ...prev,
           posts: posts as Post[],
         }));
+      } else {
+        buildNoUserHomeFeed();
       }
-      // User has not joined any communities yet
-      else {
-        getNoUserHomePosts();
-      }
-    } catch (error: any) {
-      console.log("getUserHomePosts error", error.message);
+    } catch (error) {
+      console.log("buildUserHomeFeed error", error);
     }
     setLoading(false);
   };
 
-  const getNoUserHomePosts = async () => {
+  const buildNoUserHomeFeed = async () => {
     setLoading(true);
     try {
       const postQuery = query(
@@ -78,18 +73,17 @@ const Home: NextPage = () => {
         orderBy("voteStatus", "desc"),
         limit(10)
       );
-      const postDocs = await getDocs(postQuery);
-      const posts = postDocs.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
 
+      const postDocs = await getDocs(postQuery);
+      const posts = postDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setPostStateValue((prev) => ({
         ...prev,
         posts: posts as Post[],
       }));
-    } catch (error: any) {
-      console.log("getNoUserHomePosts error", error.message);
+
+      // setPostState
+    } catch (error) {
+      console.log("buildNoUserHomeFeed error", error);
     }
     setLoading(false);
   };
@@ -106,31 +100,28 @@ const Home: NextPage = () => {
         id: doc.id,
         ...doc.data(),
       }));
+
       setPostStateValue((prev) => ({
         ...prev,
         postVotes: postVotes as PostVote[],
       }));
     } catch (error) {
-      console.log("getUserPostVotes", error);
+      console.log("getUserPostVotes error", error);
     }
   };
 
+  // useEffects
   useEffect(() => {
-    if (communityStateValue.snippetsFetched) {
-      getUserHomePosts();
-    }
+    if (communityStateValue.snippetsFetched) buildUserHomeFeed();
   }, [communityStateValue.snippetsFetched]);
 
   useEffect(() => {
-    if (!user && !loadingUser) {
-      getNoUserHomePosts();
-    }
+    if (!user && !loadingUser) buildNoUserHomeFeed();
   }, [user, loadingUser]);
 
   useEffect(() => {
     if (user && postStateValue.posts.length) getUserPostVotes();
 
-    // Clear postVotes on dismount
     return () => {
       setPostStateValue((prev) => ({
         ...prev,
@@ -140,38 +131,38 @@ const Home: NextPage = () => {
   }, [user, postStateValue.posts]);
 
   return (
-    <PageContentLayout>
+    <PageContent>
       <>
         <CreatePostLink />
         {loading ? (
           <PostLoader />
         ) : (
           <Stack>
-            {Object.values(postStateValue.posts).map((post: Post) => (
+            {postStateValue.posts.map((post) => (
               <PostItem
                 key={post.id}
                 post={post}
-                onVote={onVote}
+                onSelectPost={onSelectPost}
                 onDeletePost={onDeletePost}
+                onVote={onVote}
                 userVoteValue={
                   postStateValue.postVotes.find(
                     (item) => item.postId === post.id
                   )?.voteValue
                 }
                 userIsCreator={user?.uid === post.creatorId}
-                onSelectPost={onSelectPost}
                 homePage
               />
             ))}
           </Stack>
         )}
       </>
-      <Stack spacing={5} position="sticky" top="14px">
+      <Stack spacing={5}>
         <Recommendations />
         <Premium />
         <PersonalHome />
       </Stack>
-    </PageContentLayout>
+    </PageContent>
   );
 };
 

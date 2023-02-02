@@ -1,14 +1,24 @@
-import React, { ReactElement, useRef, useState } from "react";
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  CloseButton,
+  Flex,
+  Icon,
+  Text,
+} from "@chakra-ui/react";
+import React, { ReactEventHandler, useState } from "react";
 import { BiPoll } from "react-icons/bi";
 import { BsLink45Deg, BsMic } from "react-icons/bs";
 import { IoDocumentText, IoImageOutline } from "react-icons/io5";
-import { Alert, AlertIcon, Flex, Icon, Text } from "@chakra-ui/react";
+import { AiFillCloseCircle } from "react-icons/ai";
 import TabItem from "./TabItem";
 import TextInputs from "./PostForm/TextInputs";
 import ImageUpload from "./PostForm/ImageUpload";
+import { Post } from "../../atoms/postsAtom";
 import { User } from "firebase/auth";
 import { useRouter } from "next/router";
-import { storage, firestore } from "@/src/firebase/clientApp";
 import {
   addDoc,
   collection,
@@ -16,16 +26,16 @@ import {
   Timestamp,
   updateDoc,
 } from "firebase/firestore";
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
-import { Post } from "@/src/atoms/postAtom";
-import useSelectFile from "@/src/hooks/useSelectFile";
+import { firestore, storage } from "../../firebase/clientApp";
+import { getDownloadURL, ref, uploadString } from "firebase/storage";
+import useSelectFile from "../../hooks/useSelectFile";
 
-interface Props {
+type NewPostFormProps = {
   user: User;
   communityImageURL?: string;
-}
+};
 
-const formTabs: FormTabItem[] = [
+const formTabs: TabItem[] = [
   {
     title: "Post",
     icon: IoDocumentText,
@@ -48,15 +58,15 @@ const formTabs: FormTabItem[] = [
   },
 ];
 
-export type FormTabItem = {
+export type TabItem = {
   title: string;
   icon: typeof Icon.arguments;
 };
 
-export default function NewPostForm({
+const NewPostForm: React.FC<NewPostFormProps> = ({
   user,
   communityImageURL,
-}: Props): ReactElement {
+}) => {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState(formTabs[0].title);
   const [textInputs, setTextInputs] = useState({
@@ -64,30 +74,31 @@ export default function NewPostForm({
     body: "",
   });
   const { selectedFile, setSelectedFile, onSelectFile } = useSelectFile();
-  const selectFileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const handleCreatePost = async () => {
     const { communityId } = router.query;
+    // create new post object => type Post
+
+    const newPost: Post = {
+      communityId: communityId as string,
+      communityImageURL: communityImageURL || "",
+      creatorId: user.uid,
+      creatorDisplayName: user.email!.split("@")[0],
+      title: textInputs.title,
+      body: textInputs.body,
+      numberOfComments: 0,
+      voteStatus: 0,
+      createdAt: serverTimestamp() as Timestamp,
+    };
 
     setLoading(true);
     try {
       // store the post in db
-      const postDocRef = await addDoc(collection(firestore, "posts"), {
-        //create new post object => type Post
-        communityId: communityId as string,
-        communityImageURL: communityImageURL || "",
-        creatorId: user.uid,
-        creatorDisplayName: user.email!.split("@")[0],
-        title: textInputs.title,
-        body: textInputs.body,
-        numberOfComments: 0,
-        voteStatus: 0,
-        createdAt: serverTimestamp() as Timestamp,
-      });
+      const postDocRef = await addDoc(collection(firestore, "posts"), newPost);
 
-      // check if selectedFile exists
+      // check for selectedFile
       if (selectedFile) {
         // store in storage => getDownloadURL (return imageURL)
         const imageRef = ref(storage, `posts/${postDocRef.id}/image`);
@@ -99,19 +110,21 @@ export default function NewPostForm({
           imageURL: downloadURL,
         });
       }
-
       // redirect the user back to the communityPage using the router
       router.back();
-    } catch (error) {
-      console.log("createPost error", error);
+    } catch (error: any) {
+      console.log("handleCreatePost error", error.message);
       setError(true);
     }
     setLoading(false);
   };
 
-  const onTextChange = ({
-    target: { name, value },
-  }: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const onTextChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const {
+      target: { name, value },
+    } = event;
     setTextInputs((prev) => ({
       ...prev,
       [name]: value,
@@ -121,9 +134,9 @@ export default function NewPostForm({
   return (
     <Flex direction="column" bg="white" borderRadius={4} mt={2}>
       <Flex width="100%">
-        {formTabs.map((item, index) => (
+        {formTabs.map((item) => (
           <TabItem
-            key={index}
+            key={item.title}
             item={item}
             selected={item.title === selectedTab}
             setSelectedTab={setSelectedTab}
@@ -134,18 +147,17 @@ export default function NewPostForm({
         {selectedTab === "Post" && (
           <TextInputs
             textInputs={textInputs}
-            onChange={onTextChange}
             handleCreatePost={handleCreatePost}
+            onChange={onTextChange}
             loading={loading}
           />
         )}
         {selectedTab === "Images & Video" && (
           <ImageUpload
             selectedFile={selectedFile}
-            setSelectedFile={setSelectedFile}
-            setSelectedTab={setSelectedTab}
-            selectFileRef={selectFileRef}
             onSelectImage={onSelectFile}
+            setSelectedTab={setSelectedTab}
+            setSelectedFile={setSelectedFile}
           />
         )}
       </Flex>
@@ -157,4 +169,5 @@ export default function NewPostForm({
       )}
     </Flex>
   );
-}
+};
+export default NewPostForm;

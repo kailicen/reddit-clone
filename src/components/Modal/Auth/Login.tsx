@@ -1,14 +1,14 @@
-import { authModalState } from "@/src/atoms/authModalAtom";
 import { Button, Flex, Input, Text } from "@chakra-ui/react";
-import React, { ReactElement, useState } from "react";
+import React, { useState } from "react";
 import { useSetRecoilState } from "recoil";
+import { authModalState } from "../../../atoms/authModalAtom";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { auth } from "@/src/firebase/clientApp";
-import { FIREBASE_ERRORS } from "@/src/firebase/errors";
+import { auth } from "../../../firebase/clientApp";
+import { FIREBASE_ERRORS } from "../../../firebase/errors";
 
-interface Props {}
+type LoginProps = {};
 
-export default function Login({}: Props): ReactElement {
+const Login: React.FC<LoginProps> = () => {
   const setAuthModalState = useSetRecoilState(authModalState);
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -59,9 +59,9 @@ export default function Login({}: Props): ReactElement {
       <Input
         required
         name="password"
+        onChange={onChange}
         placeholder="password"
         type="password"
-        onChange={onChange}
         mb={2}
         fontSize="10pt"
         _placeholder={{ color: "gray.500" }}
@@ -78,11 +78,9 @@ export default function Login({}: Props): ReactElement {
         }}
         bg="gray.50"
       />
-
       <Text textAlign="center" color="red" fontSize="10pt">
         {FIREBASE_ERRORS[error?.message as keyof typeof FIREBASE_ERRORS]}
       </Text>
-
       <Button
         width="100%"
         height="36px"
@@ -93,7 +91,7 @@ export default function Login({}: Props): ReactElement {
       >
         Log In
       </Button>
-      <Flex justify="center" mb={2}>
+      <Flex justifyContent="center" mb={2}>
         <Text fontSize="9pt" mr={1}>
           Forgot your password?
         </Text>
@@ -129,4 +127,5 @@ export default function Login({}: Props): ReactElement {
       </Flex>
     </form>
   );
-}
+};
+export default Login;

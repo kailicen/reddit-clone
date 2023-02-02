@@ -1,15 +1,7 @@
-import React, { useCallback, useState } from "react";
-import {
-  Avatar,
-  Box,
-  Flex,
-  Icon,
-  Spinner,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Flex, Icon, Spinner, Stack, Text } from "@chakra-ui/react";
 import { Timestamp } from "firebase/firestore";
 import moment from "moment";
+import React from "react";
 import { FaReddit } from "react-icons/fa";
 import {
   IoArrowDownCircleOutline,
@@ -30,61 +22,31 @@ export type Comment = {
 type CommentItemProps = {
   comment: Comment;
   onDeleteComment: (comment: Comment) => void;
-  isLoading: boolean;
-  userId?: string;
+  loadingDelete: boolean;
+  userId: string;
 };
 
 const CommentItem: React.FC<CommentItemProps> = ({
   comment,
   onDeleteComment,
-  isLoading,
+  loadingDelete,
   userId,
 }) => {
-  // const [loading, setLoading] = useState(false);
-
-  // const handleDelete = useCallback(async () => {
-  //   setLoading(true);
-  //   try {
-  //     const success = await onDeleteComment(comment);
-
-  //     if (!success) {
-  //       throw new Error("Error deleting comment");
-  //     }
-  //   } catch (error: any) {
-  //     console.log(error.message);
-  //     // setError
-  //     setLoading(false);
-  //   }
-  // }, [setLoading]);
-
   return (
     <Flex>
       <Box mr={2}>
         <Icon as={FaReddit} fontSize={30} color="gray.300" />
       </Box>
       <Stack spacing={1}>
-        <Stack direction="row" align="center" spacing={2} fontSize="8pt">
-          <Text
-            fontWeight={700}
-            _hover={{ textDecoration: "underline", cursor: "pointer" }}
-          >
-            {comment.creatorDisplayText}
+        <Stack direction="row" align="center" fontSize="8pt">
+          <Text fontWeight={700}>{comment.creatorDisplayText}</Text>
+          <Text color="gray.600">
+            {moment(new Date(comment.createdAt.seconds * 1000)).fromNow()}
           </Text>
-          {comment.createdAt?.seconds && (
-            <Text color="gray.600">
-              {moment(new Date(comment.createdAt?.seconds * 1000)).fromNow()}
-            </Text>
-          )}
-          {isLoading && <Spinner size="sm" />}
+          {loadingDelete && <Spinner size="sm" />}
         </Stack>
         <Text fontSize="10pt">{comment.text}</Text>
-        <Stack
-          direction="row"
-          align="center"
-          cursor="pointer"
-          fontWeight={600}
-          color="gray.500"
-        >
+        <Stack direction="row" align="center" cursor="pointer" color="gray.500">
           <Icon as={IoArrowUpCircleOutline} />
           <Icon as={IoArrowDownCircleOutline} />
           {userId === comment.creatorId && (

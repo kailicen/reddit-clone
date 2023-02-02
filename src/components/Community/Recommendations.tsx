@@ -17,9 +17,7 @@ import { Community } from "../../atoms/communitiesAtom";
 import { firestore } from "../../firebase/clientApp";
 import useCommunityData from "../../hooks/useCommunityData";
 
-type RecommendationsProps = {};
-
-const Recommendations: React.FC<RecommendationsProps> = () => {
+const Recommendations: React.FC = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(false);
   const { communityStateValue, onJoinOrLeaveCommunity } = useCommunityData();
@@ -36,11 +34,10 @@ const Recommendations: React.FC<RecommendationsProps> = () => {
       const communities = communityDocs.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      })) as Community[];
-
-      setCommunities(communities);
-    } catch (error: any) {
-      console.log("getCommunityRecommendations error", error.message);
+      }));
+      setCommunities(communities as Community[]);
+    } catch (error) {
+      console.log("getCommunityRecommendations error", error);
     }
     setLoading(false);
   };
@@ -54,7 +51,6 @@ const Recommendations: React.FC<RecommendationsProps> = () => {
       direction="column"
       bg="white"
       borderRadius={4}
-      cursor="pointer"
       border="1px solid"
       borderColor="gray.300"
     >
@@ -62,10 +58,9 @@ const Recommendations: React.FC<RecommendationsProps> = () => {
         align="flex-end"
         color="white"
         p="6px 10px"
-        bg="blue.500"
         height="70px"
         borderRadius="4px 4px 0px 0px"
-        fontWeight={600}
+        fontWeight={700}
         bgImage="url(/images/recCommsArt.png)"
         backgroundSize="cover"
         bgGradient="linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75)),
@@ -104,20 +99,18 @@ const Recommendations: React.FC<RecommendationsProps> = () => {
                     borderBottom="1px solid"
                     borderColor="gray.200"
                     p="10px 12px"
-                    fontWeight={600}
                   >
                     <Flex width="80%" align="center">
                       <Flex width="15%">
-                        <Text mr={2}>{index + 1}</Text>
+                        <Text>{index + 1}</Text>
                       </Flex>
                       <Flex align="center" width="80%">
                         {item.imageURL ? (
                           <Image
+                            src={item.imageURL}
                             borderRadius="full"
                             boxSize="28px"
-                            src={item.imageURL}
                             mr={2}
-                            alt="image"
                           />
                         ) : (
                           <Icon
@@ -133,18 +126,20 @@ const Recommendations: React.FC<RecommendationsProps> = () => {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                           }}
-                        >{`r/${item.id}`}</span>
+                        >
+                          {`r/${item.id}`}
+                        </span>
                       </Flex>
                     </Flex>
                     <Box position="absolute" right="10px">
                       <Button
                         height="22px"
                         fontSize="8pt"
+                        variant={isJoined ? "outline" : "solid"}
                         onClick={(event) => {
                           event.stopPropagation();
                           onJoinOrLeaveCommunity(item, isJoined);
                         }}
-                        variant={isJoined ? "outline" : "solid"}
                       >
                         {isJoined ? "Joined" : "Join"}
                       </Button>

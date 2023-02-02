@@ -1,7 +1,9 @@
-import React from "react";
 import { Stack, Box, SkeletonText, Skeleton } from "@chakra-ui/react";
+import React from "react";
 
-const PostLoader: React.FC = () => {
+type PostLoaderProps = {};
+
+const PostLoader: React.FC<PostLoaderProps> = () => {
   return (
     <Stack spacing={6}>
       <Box padding="10px 10px" boxShadow="lg" bg="white" borderRadius={4}>

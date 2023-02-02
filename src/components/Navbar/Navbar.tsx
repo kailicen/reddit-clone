@@ -1,12 +1,13 @@
-import React from "react";
 import { Flex, Image } from "@chakra-ui/react";
-import SearchInput from "./SearchInput";
-import RightContent from "./RightContent/RightContent";
+import { User } from "firebase/auth";
+import React from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/src/firebase/clientApp";
+import { defaultMenuItem } from "../../atoms/directoryMenuAtom";
+import { auth } from "../../firebase/clientApp";
+import useDirectory from "../../hooks/useDirectory";
 import Directory from "./Directory/Directory";
-import useDirectory from "@/src/hooks/useDirectory";
-import { defaultMenuItem } from "@/src/atoms/directoryMenuAtom";
+import RightContent from "./RightContent/RightContent";
+import SearchInput from "./SearchInput";
 
 const Navbar: React.FC = () => {
   const [user, loading, error] = useAuthState(auth);
@@ -25,19 +26,17 @@ const Navbar: React.FC = () => {
         cursor="pointer"
         onClick={() => onSelectMenuItem(defaultMenuItem)}
       >
-        <Image src="/images/redditFace.svg" height="30px" alt="redditFace" />
+        <Image src="/images/redditFace.svg" height="30px" />
         <Image
           src="/images/redditText.svg"
           height="46px"
           display={{ base: "none", md: "unset" }}
-          alt="redditText"
         />
       </Flex>
-      <Directory />
+      {user && <Directory />}
       <SearchInput user={user} />
       <RightContent user={user} />
     </Flex>
   );
 };
-
 export default Navbar;

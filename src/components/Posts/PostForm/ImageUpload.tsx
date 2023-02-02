@@ -1,31 +1,26 @@
-import React, { Ref } from "react";
-import { Flex, Stack, Button, Image } from "@chakra-ui/react";
+import { Button, Flex, Image, Stack } from "@chakra-ui/react";
+import React, { useRef } from "react";
 
 type ImageUploadProps = {
   selectedFile?: string;
-  setSelectedFile: (value: string) => void;
-  setSelectedTab: (value: string) => void;
-  selectFileRef: React.RefObject<HTMLInputElement>;
   onSelectImage: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  setSelectedTab: (value: string) => void;
+  setSelectedFile: (value: string) => void;
 };
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
   selectedFile,
-  setSelectedFile,
-  setSelectedTab,
-  selectFileRef,
   onSelectImage,
+  setSelectedTab,
+  setSelectedFile,
 }) => {
+  const selectedFileRef = useRef<HTMLInputElement>(null);
+
   return (
     <Flex direction="column" justify="center" align="center" width="100%">
       {selectedFile ? (
         <>
-          <Image
-            src={selectedFile}
-            maxWidth="400px"
-            maxHeight="400px"
-            alt="selectedImg"
-          />
+          <Image src={selectedFile} maxWidth="400px" maxHeight="400px" />
           <Stack direction="row" mt={4}>
             <Button height="28px" onClick={() => setSelectedTab("Post")}>
               Back to Post
@@ -46,24 +41,23 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           p={20}
           border="1px dashed"
           borderColor="gray.200"
-          borderRadius={4}
           width="100%"
+          borderRadius={4}
         >
           <Button
             variant="outline"
             height="28px"
-            onClick={() => selectFileRef.current?.click()}
+            onClick={() => selectedFileRef.current?.click()}
           >
             Upload
           </Button>
           <input
-            id="file-upload"
+            ref={selectedFileRef}
             type="file"
-            accept="image/x-png,image/gif,image/jpeg"
             hidden
-            ref={selectFileRef}
             onChange={onSelectImage}
           />
+          <img src={selectedFile} />
         </Flex>
       )}
     </Flex>

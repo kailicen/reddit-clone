@@ -1,26 +1,24 @@
 import { doc, getDoc } from "firebase/firestore";
-import { firestore } from "@/src/firebase/clientApp";
 import { GetServerSidePropsContext } from "next";
-import React, { ReactElement, useEffect } from "react";
-import { Community, communityState } from "@/src/atoms/communitiesAtom";
+import React, { useEffect } from "react";
+import { Community, communityState } from "../../../atoms/communitiesAtom";
+import { firestore } from "../../../firebase/clientApp";
 import safeJsonStringify from "safe-json-stringify";
-import NotFound from "@/src/components/Community/NotFound";
-import Header from "@/src/components/Community/Header";
-import PageContent from "@/src/components/Layout/PageContent";
-import CreatePostLink from "@/src/components/Community/CreatePostLink";
-import Posts from "@/src/components/Posts/Posts";
-import { useRecoilState } from "recoil";
-import About from "@/src/components/Community/About";
+import NotFound from "../../../components/Community/NotFound";
+import Header from "../../../components/Community/Header";
+import PageContent from "../../../components/Layout/PageContent";
+import CreatePostLink from "../../../components/Community/CreatePostLink";
+import Posts from "../../../components/Posts/Posts";
+import { useSetRecoilState } from "recoil";
+import About from "../../../components/Community/About";
 
-interface CommunityPageProps {
+type CommunityPageProps = {
   communityData: Community;
-}
+};
 
-export default function CommunityPage({
-  communityData,
-}: CommunityPageProps): ReactElement {
-  const [communityStateValue, setCommunityStateValue] =
-    useRecoilState(communityState);
+const CommunityPage: React.FC<CommunityPageProps> = ({ communityData }) => {
+  console.log("here is data", communityData);
+  const setCommunityStateValue = useSetRecoilState(communityState);
 
   useEffect(() => {
     setCommunityStateValue((prev) => ({
@@ -47,7 +45,7 @@ export default function CommunityPage({
       </PageContent>
     </>
   );
-}
+};
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   // get community data and pass it to client
@@ -69,7 +67,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
     };
   } catch (error) {
-    // could add error page here
+    // Could add error page here
     console.log("getServerSideProps error", error);
   }
 }
+
+export default CommunityPage;

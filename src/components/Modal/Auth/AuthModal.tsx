@@ -1,11 +1,13 @@
-import { auth } from "@/src/firebase/clientApp";
 import {
+  useDisclosure,
+  Button,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
   ModalCloseButton,
   ModalBody,
+  ModalFooter,
   Flex,
   Text,
 } from "@chakra-ui/react";
@@ -13,13 +15,14 @@ import React, { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilState } from "recoil";
 import { authModalState } from "../../../atoms/authModalAtom";
+import { auth } from "../../../firebase/clientApp";
 import AuthInputs from "./AuthInputs";
 import OAuthButtons from "./OAuthButtons";
 import ResetPassword from "./ResetPassword";
 
 const AuthModal: React.FC = () => {
+  const [user] = useAuthState(auth);
   const [modalState, setModalState] = useRecoilState(authModalState);
-  const [user, loading, error] = useAuthState(auth);
 
   const handleClose = () => {
     setModalState((prev) => ({
@@ -31,7 +34,6 @@ const AuthModal: React.FC = () => {
   useEffect(() => {
     if (user) handleClose();
   }, [user]);
-
   return (
     <>
       <Modal isOpen={modalState.open} onClose={handleClose}>
@@ -48,6 +50,7 @@ const AuthModal: React.FC = () => {
             flexDirection="column"
             alignItems="center"
             justifyContent="center"
+            pb={6}
           >
             <Flex
               direction="column"
@@ -73,5 +76,4 @@ const AuthModal: React.FC = () => {
     </>
   );
 };
-
 export default AuthModal;

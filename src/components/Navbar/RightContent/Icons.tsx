@@ -1,5 +1,3 @@
-import React, { ReactElement } from "react";
-import { AddIcon } from "@chakra-ui/icons";
 import { Box, Flex, Icon } from "@chakra-ui/react";
 import { BsArrowUpRightCircle, BsChatDots } from "react-icons/bs";
 import { GrAdd } from "react-icons/gr";
@@ -9,9 +7,7 @@ import {
   IoVideocamOutline,
 } from "react-icons/io5";
 
-interface Props {}
-
-export default function Icons({}: Props): ReactElement {
+const Icons: React.FC = () => {
   return (
     <Flex>
       <Flex
@@ -23,6 +19,7 @@ export default function Icons({}: Props): ReactElement {
         <Flex
           mr={1.5}
           ml={1.5}
+          padding={1}
           cursor="pointer"
           borderRadius={4}
           _hover={{ bg: "gray.200" }}
@@ -32,6 +29,7 @@ export default function Icons({}: Props): ReactElement {
         <Flex
           mr={1.5}
           ml={1.5}
+          padding={1}
           cursor="pointer"
           borderRadius={4}
           _hover={{ bg: "gray.200" }}
@@ -41,6 +39,7 @@ export default function Icons({}: Props): ReactElement {
         <Flex
           mr={1.5}
           ml={1.5}
+          padding={1}
           cursor="pointer"
           borderRadius={4}
           _hover={{ bg: "gray.200" }}
@@ -52,6 +51,7 @@ export default function Icons({}: Props): ReactElement {
         <Flex
           mr={1.5}
           ml={1.5}
+          padding={1}
           cursor="pointer"
           borderRadius={4}
           _hover={{ bg: "gray.200" }}
@@ -61,6 +61,7 @@ export default function Icons({}: Props): ReactElement {
         <Flex
           mr={1.5}
           ml={1.5}
+          padding={1}
           cursor="pointer"
           borderRadius={4}
           _hover={{ bg: "gray.200" }}
@@ -71,6 +72,7 @@ export default function Icons({}: Props): ReactElement {
           display={{ base: "none", md: "flex" }}
           mr={1.5}
           ml={1.5}
+          padding={1}
           cursor="pointer"
           borderRadius={4}
           _hover={{ bg: "gray.200" }}
@@ -80,4 +82,5 @@ export default function Icons({}: Props): ReactElement {
       </>
     </Flex>
   );
-}
+};
+export default Icons;

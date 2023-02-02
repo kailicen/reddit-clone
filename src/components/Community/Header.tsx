@@ -1,22 +1,23 @@
-import { Community } from "@/src/atoms/communitiesAtom";
-import useCommunityData from "@/src/hooks/useCommunityData";
 import { Box, Button, Flex, Icon, Image, Text } from "@chakra-ui/react";
-import React, { ReactElement } from "react";
+import React, { useState } from "react";
 import { FaReddit } from "react-icons/fa";
+import { Community } from "../../atoms/communitiesAtom";
+import useCommunityData from "../../hooks/useCommunityData";
 
-interface Props {
+type HeaderProps = {
   communityData: Community;
-}
+};
 
-export default function Header({ communityData }: Props): ReactElement {
+const Header: React.FC<HeaderProps> = ({ communityData }) => {
   const { communityStateValue, onJoinOrLeaveCommunity, loading } =
     useCommunityData();
   const isJoined = !!communityStateValue.mySnippets.find(
     (item) => item.communityId === communityData.id
   );
+
   return (
     <Flex direction="column" width="100%" height="146px">
-      <Box height="50%" bg="blue.400"></Box>
+      <Box height="50%" bg="blue.400" />
       <Flex justify="center" bg="white" flexGrow={1}>
         <Flex width="95%" maxWidth="860px">
           {communityStateValue.currentCommunity?.imageURL ? (
@@ -24,7 +25,7 @@ export default function Header({ communityData }: Props): ReactElement {
               borderRadius="full"
               boxSize="66px"
               src={communityStateValue.currentCommunity.imageURL}
-              alt="community img"
+              alt="Dan Abramov"
               position="relative"
               top={-3}
               color="blue.500"
@@ -38,7 +39,7 @@ export default function Header({ communityData }: Props): ReactElement {
               top={-3}
               color="blue.500"
               border="4px solid white"
-              borderRadius="50%"
+              borderRadius="full"
             />
           )}
           <Flex padding="10px 16px">
@@ -65,4 +66,5 @@ export default function Header({ communityData }: Props): ReactElement {
       </Flex>
     </Flex>
   );
-}
+};
+export default Header;

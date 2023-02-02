@@ -1,12 +1,14 @@
-import { authModalState } from "@/src/atoms/authModalAtom";
-import { auth } from "@/src/firebase/clientApp";
-import { Button, Flex, Input, Text } from "@chakra-ui/react";
-import React, { ReactElement, useState } from "react";
+import { Input, Button, Flex, Text } from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
+import { authModalState } from "../../../atoms/authModalAtom";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { FIREBASE_ERRORS } from "@/src/firebase/errors";
+import { auth, firestore } from "../../../firebase/clientApp";
+import { FIREBASE_ERRORS } from "../../../firebase/errors";
+import { User } from "firebase/auth";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 
-export default function SignUp(): ReactElement {
+const SignUp: React.FC = () => {
   const setAuthModalState = useSetRecoilState(authModalState);
   const [signUpForm, setSignUpForm] = useState({
     email: "",
@@ -14,7 +16,7 @@ export default function SignUp(): ReactElement {
     confirmPassword: "",
   });
   const [error, setError] = useState("");
-  const [createUserWithEmailAndPassword, user, loading, userError] =
+  const [createUserWithEmailAndPassword, userCred, loading, userError] =
     useCreateUserWithEmailAndPassword(auth);
 
   // Firebase logic
@@ -24,10 +26,8 @@ export default function SignUp(): ReactElement {
     if (signUpForm.password !== signUpForm.confirmPassword) {
       setError("Passwords do not match");
       return;
-    } else if (signUpForm.password.length < 6) {
-      setError("Please enter at least 6 digits");
-      return;
     }
+    // passwords match
     createUserWithEmailAndPassword(signUpForm.email, signUpForm.password);
   };
 
@@ -38,6 +38,19 @@ export default function SignUp(): ReactElement {
       [event.target.name]: event.target.value,
     }));
   };
+
+  const createUserDocument = async (user: User) => {
+    await setDoc(
+      doc(firestore, "users", user.uid),
+      JSON.parse(JSON.stringify(user))
+    );
+  };
+
+  useEffect(() => {
+    if (userCred) {
+      createUserDocument(userCred.user);
+    }
+  }, [userCred]);
 
   return (
     <form onSubmit={onSubmit}>
@@ -66,9 +79,9 @@ export default function SignUp(): ReactElement {
       <Input
         required
         name="password"
+        onChange={onChange}
         placeholder="password"
         type="password"
-        onChange={onChange}
         mb={2}
         fontSize="10pt"
         _placeholder={{ color: "gray.500" }}
@@ -88,9 +101,9 @@ export default function SignUp(): ReactElement {
       <Input
         required
         name="confirmPassword"
+        onChange={onChange}
         placeholder="confirm password"
         type="password"
-        onChange={onChange}
         mb={2}
         fontSize="10pt"
         _placeholder={{ color: "gray.500" }}
@@ -107,12 +120,10 @@ export default function SignUp(): ReactElement {
         }}
         bg="gray.50"
       />
-
       <Text textAlign="center" color="red" fontSize="10pt">
         {error ||
           FIREBASE_ERRORS[userError?.message as keyof typeof FIREBASE_ERRORS]}
       </Text>
-
       <Button
         width="100%"
         height="36px"
@@ -141,4 +152,5 @@ export default function SignUp(): ReactElement {
       </Flex>
     </form>
   );
-}
+};
+export default SignUp;

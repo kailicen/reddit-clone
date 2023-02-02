@@ -1,5 +1,5 @@
+import { Button, Flex, Input, Stack, Textarea } from "@chakra-ui/react";
 import React from "react";
-import { Stack, Input, Textarea, Flex, Button } from "@chakra-ui/react";
 
 type TextInputsProps = {
   textInputs: {
@@ -25,6 +25,9 @@ const TextInputs: React.FC<TextInputsProps> = ({
         name="title"
         value={textInputs.title}
         onChange={onChange}
+        fontSize="10pt"
+        borderRadius={4}
+        placeholder="Title"
         _placeholder={{ color: "gray.500" }}
         _focus={{
           outline: "none",
@@ -32,15 +35,14 @@ const TextInputs: React.FC<TextInputsProps> = ({
           border: "1px solid",
           borderColor: "black",
         }}
-        fontSize="10pt"
-        borderRadius={4}
-        placeholder="Title"
       />
       <Textarea
         name="body"
         value={textInputs.body}
         onChange={onChange}
         fontSize="10pt"
+        borderRadius={4}
+        height="100px"
         placeholder="Text (optional)"
         _placeholder={{ color: "gray.500" }}
         _focus={{
@@ -49,7 +51,6 @@ const TextInputs: React.FC<TextInputsProps> = ({
           border: "1px solid",
           borderColor: "black",
         }}
-        height="100px"
       />
       <Flex justify="flex-end">
         <Button

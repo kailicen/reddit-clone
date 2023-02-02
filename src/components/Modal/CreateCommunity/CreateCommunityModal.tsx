@@ -1,39 +1,39 @@
-import { auth, firestore } from "@/src/firebase/clientApp";
-import useDirectory from "@/src/hooks/useDirectory";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Button,
   Box,
-  Divider,
-  Text,
-  Input,
-  Stack,
+  Button,
   Checkbox,
+  Divider,
   Flex,
   Icon,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Stack,
+  Text,
 } from "@chakra-ui/react";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/router";
-import React, { ReactElement, useState } from "react";
+import React, { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { BsFillEyeFill, BsFillPersonFill } from "react-icons/bs";
 import { HiLockClosed } from "react-icons/hi";
+import { auth, firestore } from "../../../firebase/clientApp";
+import useDirectory from "../../../hooks/useDirectory";
 
-interface Props {
+type CreateCommunityModalProps = {
   open: boolean;
   handleClose: () => void;
-}
+};
 
-export default function CreateCommunity({
+const CreateCommunityModal: React.FC<CreateCommunityModalProps> = ({
   open,
   handleClose,
-}: Props): ReactElement {
+}) => {
   const [user] = useAuthState(auth);
   const [communityName, setCommunityName] = useState("");
   const [charsRemaining, setCharsRemaining] = useState(21);
@@ -45,7 +45,9 @@ export default function CreateCommunity({
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 21) return;
+
     setCommunityName(event.target.value);
+    // recalculate how many chars we have left in the name
     setCharsRemaining(21 - event.target.value.length);
   };
 
@@ -57,31 +59,26 @@ export default function CreateCommunity({
 
   const handleCreateCommunity = async () => {
     if (error) setError("");
-
-    //validate the community
-    const format = /[ `!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?~]/;
+    // Validate the community
+    const format = /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
     if (format.test(communityName) || communityName.length < 3) {
       setError(
-        "Community names must be between 3-21 characters, and can be only contain letters, numbers, or underscores"
+        "Community names must be between 3-21 characters, and can only contain letters, numbers, or underscores"
       );
       return;
     }
 
     setLoading(true);
-
     try {
-      //create the community doc in firestore
       const communityDocRef = doc(firestore, "communities", communityName);
-
       await runTransaction(firestore, async (transaction) => {
-        // check if community exists in db
+        // Check if community exists in db
         const communityDoc = await transaction.get(communityDocRef);
         if (communityDoc.exists()) {
-          setError(`Sorry, r/${communityName} is taken. Try another.`);
-          throw new Error();
+          throw new Error(`Sorry, r/${communityName} is taken. Try another.`);
         }
 
-        // create community
+        // Create community
         transaction.set(communityDocRef, {
           creatorId: user?.uid,
           createdAt: serverTimestamp(),
@@ -106,7 +103,6 @@ export default function CreateCommunity({
       console.log("handleCreateCommunity error", error);
       setError(error.message);
     }
-
     setLoading(false);
   };
 
@@ -123,18 +119,23 @@ export default function CreateCommunity({
           >
             Create a community
           </ModalHeader>
-
           <Box pl={3} pr={3}>
             <Divider />
             <ModalCloseButton />
-            <ModalBody display="flex" flexDirection="column" padding="10px 0">
+            <ModalBody display="flex" flexDirection="column" padding="10px 0px">
               <Text fontWeight={600} fontSize={15}>
                 Name
               </Text>
               <Text fontSize={11} color="gray.500">
                 Community names including capitalization cannot be changed
               </Text>
-              <Text position="relative" top="28px" left="10px" color="gray.400">
+              <Text
+                position="relative"
+                top="28px"
+                left="10px"
+                width="20px"
+                color="gray.400"
+              >
                 r/
               </Text>
               <Input
@@ -148,17 +149,16 @@ export default function CreateCommunity({
                 fontSize="9pt"
                 color={charsRemaining === 0 ? "red" : "gray.500"}
               >
-                {charsRemaining}Characters remaining
+                {charsRemaining} Characters remaining
               </Text>
-
               <Text fontSize="9pt" color="red" pt={1}>
                 {error}
               </Text>
-
               <Box mt={4} mb={4}>
                 <Text fontWeight={600} fontSize={15}>
                   Community Type
                 </Text>
+                {/* checkbox */}
                 <Stack spacing={2}>
                   <Checkbox
                     name="public"
@@ -166,7 +166,7 @@ export default function CreateCommunity({
                     onChange={onCommunityTypeChange}
                   >
                     <Flex align="center">
-                      <Icon color="gray.500" mr={2} as={BsFillPersonFill} />
+                      <Icon as={BsFillPersonFill} color="gray.500" mr={2} />
                       <Text fontSize="10pt" mr={1}>
                         Public
                       </Text>
@@ -181,7 +181,7 @@ export default function CreateCommunity({
                     onChange={onCommunityTypeChange}
                   >
                     <Flex align="center">
-                      <Icon color="gray.500" mr={2} as={BsFillEyeFill} />
+                      <Icon as={BsFillEyeFill} color="gray.500" mr={2} />
                       <Text fontSize="10pt" mr={1}>
                         Restricted
                       </Text>
@@ -197,12 +197,13 @@ export default function CreateCommunity({
                     onChange={onCommunityTypeChange}
                   >
                     <Flex align="center">
-                      <Icon color="gray.500" mr={2} as={HiLockClosed} />
+                      <Icon as={HiLockClosed} color="gray.500" mr={2} />
                       <Text fontSize="10pt" mr={1}>
                         Private
                       </Text>
                       <Text fontSize="8pt" color="gray.500" pt={1}>
-                        Only approved users can view submit to this community
+                        Only approved users can view and submit to this
+                        community
                       </Text>
                     </Flex>
                   </Checkbox>
@@ -211,7 +212,7 @@ export default function CreateCommunity({
             </ModalBody>
           </Box>
 
-          <ModalFooter bg="gray.100" borderRadius="0 0 10px 10px">
+          <ModalFooter bg="gray.100" borderRadius="0px 0px 10px 10px">
             <Button
               variant="outline"
               height="30px"
@@ -232,4 +233,5 @@ export default function CreateCommunity({
       </Modal>
     </>
   );
-}
+};
+export default CreateCommunityModal;

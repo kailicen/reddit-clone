@@ -1,4 +1,3 @@
-import { authModalState } from "@/src/atoms/authModalAtom";
 import { Flex, Icon, Input } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
@@ -7,12 +6,11 @@ import { BsLink45Deg } from "react-icons/bs";
 import { FaReddit } from "react-icons/fa";
 import { IoImageOutline } from "react-icons/io5";
 import { useSetRecoilState } from "recoil";
-import { auth } from "@/src/firebase/clientApp";
-import useDirectory from "@/src/hooks/useDirectory";
+import { authModalState } from "../../atoms/authModalAtom";
+import { auth } from "../../firebase/clientApp";
+import useDirectory from "../../hooks/useDirectory";
 
-type CreatePostProps = {};
-
-const CreatePostLink: React.FC<CreatePostProps> = () => {
+const CreatePostLink: React.FC = () => {
   const router = useRouter();
   const [user] = useAuthState(auth);
   const setAuthModalState = useSetRecoilState(authModalState);
@@ -21,6 +19,7 @@ const CreatePostLink: React.FC<CreatePostProps> = () => {
   const onClick = () => {
     if (!user) {
       setAuthModalState({ open: true, view: "login" });
+      return;
     }
     const { communityId } = router.query;
 
@@ -28,8 +27,11 @@ const CreatePostLink: React.FC<CreatePostProps> = () => {
       router.push(`/r/${communityId}/submit`);
       return;
     }
+
+    // open our direcotry menu
     toggleMenuOpen();
   };
+
   return (
     <Flex
       justify="space-evenly"

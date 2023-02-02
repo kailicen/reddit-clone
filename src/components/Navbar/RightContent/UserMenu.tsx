@@ -1,3 +1,4 @@
+import React from "react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import {
   Menu,
@@ -11,26 +12,26 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { signOut, User } from "firebase/auth";
-import React, { ReactElement } from "react";
 import { FaRedditSquare } from "react-icons/fa";
 import { VscAccount } from "react-icons/vsc";
 import { IoSparkles } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
 import { MdOutlineLogin } from "react-icons/md";
-import { auth } from "@/src/firebase/clientApp";
-import { authModalState } from "@/src/atoms/authModalAtom";
+import { auth } from "../../../firebase/clientApp";
 import { useResetRecoilState, useSetRecoilState } from "recoil";
-import { communityState } from "@/src/atoms/communitiesAtom";
+import { authModalState } from "../../../atoms/authModalAtom";
+import { communityState } from "../../../atoms/communitiesAtom";
 
-type RightContentProps = {
+type UserMenuProps = {
   user?: User | null;
 };
 
-export default function UserMenu({ user }: RightContentProps): ReactElement {
+const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
   const setAuthModalState = useSetRecoilState(authModalState);
 
   const logout = async () => {
     await signOut(auth);
+    // clear community state
   };
 
   return (
@@ -68,7 +69,7 @@ export default function UserMenu({ user }: RightContentProps): ReactElement {
                 </Flex>
               </>
             ) : (
-              <Icon fontSize={24} color="gray.400" as={VscAccount} />
+              <Icon fontSize={24} color="gray.400" mr={1} as={VscAccount} />
             )}
           </Flex>
           <ChevronDownIcon />
@@ -118,4 +119,5 @@ export default function UserMenu({ user }: RightContentProps): ReactElement {
       </MenuList>
     </Menu>
   );
-}
+};
+export default UserMenu;

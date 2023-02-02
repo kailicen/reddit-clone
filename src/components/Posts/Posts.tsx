@@ -1,19 +1,19 @@
-import { Community } from "@/src/atoms/communitiesAtom";
-import { Post } from "@/src/atoms/postAtom";
-import { auth, firestore } from "@/src/firebase/clientApp";
-import usePosts from "@/src/hooks/usePosts";
 import { Stack } from "@chakra-ui/react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Community } from "../../atoms/communitiesAtom";
+import { Post } from "../../atoms/postsAtom";
+import { auth, firestore } from "../../firebase/clientApp";
+import usePosts from "../../hooks/usePosts";
 import PostItem from "./PostItem";
 import PostLoader from "./PostLoader";
 
-interface Props {
+type PostsProps = {
   communityData: Community;
-}
+};
 
-export default function Posts({ communityData }: Props): ReactElement {
+const Posts: React.FC<PostsProps> = ({ communityData }) => {
   const [user] = useAuthState(auth);
   const [loading, setLoading] = useState(false);
   const {
@@ -27,21 +27,24 @@ export default function Posts({ communityData }: Props): ReactElement {
   const getPosts = async () => {
     try {
       setLoading(true);
+      // get posts for this community
       const postsQuery = query(
         collection(firestore, "posts"),
-        where("communityId", "==", communityData?.id!),
+        where("communityId", "==", communityData.id),
         orderBy("createdAt", "desc")
       );
       const postDocs = await getDocs(postsQuery);
 
-      //store in post state
+      // Store in post state
       const posts = postDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setPostStateValue((prev) => ({
         ...prev,
         posts: posts as Post[],
       }));
-    } catch (error) {
-      console.log("getPosts error", error);
+
+      console.log("posts", posts);
+    } catch (error: any) {
+      console.log("getPosts error", error.message);
     }
     setLoading(false);
   };
@@ -56,7 +59,7 @@ export default function Posts({ communityData }: Props): ReactElement {
         <PostLoader />
       ) : (
         <Stack>
-          {Object.values(postStateValue.posts).map((item) => (
+          {postStateValue.posts.map((item) => (
             <PostItem
               key={item.id}
               post={item}
@@ -74,4 +77,5 @@ export default function Posts({ communityData }: Props): ReactElement {
       )}
     </>
   );
-}
+};
+export default Posts;

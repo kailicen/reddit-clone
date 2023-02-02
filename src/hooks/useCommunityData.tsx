@@ -1,12 +1,3 @@
-import React, { ReactElement, useEffect, useState } from "react";
-import {
-  Community,
-  CommunitySnippet,
-  communityState,
-} from "../atoms/communitiesAtom";
-import { useRecoilState, useSetRecoilState } from "recoil";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, firestore } from "../firebase/clientApp";
 import {
   collection,
   doc,
@@ -15,24 +6,35 @@ import {
   increment,
   writeBatch,
 } from "firebase/firestore";
-import { Preahvihear } from "@next/font/google";
-import { authModalState } from "../atoms/authModalAtom";
 import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { authModalState } from "../atoms/authModalAtom";
+import {
+  Community,
+  CommunitySnippet,
+  communityState,
+} from "../atoms/communitiesAtom";
+import { auth, firestore } from "../firebase/clientApp";
 
 const useCommunityData = () => {
   const [user] = useAuthState(auth);
+  const router = useRouter();
   const [communityStateValue, setCommunityStateValue] =
     useRecoilState(communityState);
   const setAuthModalState = useSetRecoilState(authModalState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
   const onJoinOrLeaveCommunity = (
     communityData: Community,
     isJoined: boolean
   ) => {
+    // is the user signed in?
+    // if not => open auth modal
     if (!user) {
+      // open modal
       setAuthModalState({ open: true, view: "login" });
       return;
     }
@@ -48,15 +50,16 @@ const useCommunityData = () => {
   const getMySnippets = async () => {
     setLoading(true);
     try {
+      // get users snippets
       const snippetDocs = await getDocs(
         collection(firestore, `users/${user?.uid}/communitySnippets`)
       );
 
       const snippets = snippetDocs.docs.map((doc) => ({ ...doc.data() }));
+
       setCommunityStateValue((prev) => ({
         ...prev,
         mySnippets: snippets as CommunitySnippet[],
-        // for homepage with user logged in
         snippetsFetched: true,
       }));
     } catch (error: any) {
@@ -68,15 +71,14 @@ const useCommunityData = () => {
 
   const joinCommunity = async (communityData: Community) => {
     try {
-      // batch write
       const batch = writeBatch(firestore);
+
       // creating a new community snippet
       const newSnippet: CommunitySnippet = {
         communityId: communityData.id,
         imageURL: communityData.imageURL || "",
         isModerator: user?.uid === communityData.creatorId,
       };
-
       batch.set(
         doc(
           firestore,
@@ -85,10 +87,11 @@ const useCommunityData = () => {
         ),
         newSnippet
       );
-      // updating the numberOfMembers
+
       batch.update(doc(firestore, "communities", communityData.id), {
         numberOfMembers: increment(1),
       });
+
       await batch.commit();
 
       // update recoil state - communityState.mySnippets
@@ -104,17 +107,20 @@ const useCommunityData = () => {
   };
 
   const leaveCommunity = async (communityId: string) => {
+    // batch write
     try {
-      // batch write
       const batch = writeBatch(firestore);
-      // delete a community snippet
+
+      // deleting the community snippet from user
       batch.delete(
         doc(firestore, `users/${user?.uid}/communitySnippets`, communityId)
       );
-      // updating the numberOfMembers
+
+      // updating the numberOfMembers (-1)
       batch.update(doc(firestore, "communities", communityId), {
         numberOfMembers: increment(-1),
       });
+
       await batch.commit();
 
       // update recoil state - communityState.mySnippets
@@ -125,7 +131,7 @@ const useCommunityData = () => {
         ),
       }));
     } catch (error: any) {
-      console.log("joinCommunity error", error);
+      console.log("leaveCommunity error", error.message);
       setError(error.message);
     }
     setLoading(false);
@@ -149,7 +155,6 @@ const useCommunityData = () => {
   };
 
   useEffect(() => {
-    // clear community snippets
     if (!user) {
       setCommunityStateValue((prev) => ({
         ...prev,
@@ -170,6 +175,7 @@ const useCommunityData = () => {
   }, [router.query, communityStateValue.currentCommunity]);
 
   return {
+    // data and functions
     communityStateValue,
     onJoinOrLeaveCommunity,
     loading,

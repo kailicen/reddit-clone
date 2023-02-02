@@ -1,4 +1,4 @@
-import { Timestamp } from "@google-cloud/firestore";
+import { Timestamp } from "firebase/firestore";
 import { atom } from "recoil";
 
 export interface Community {
