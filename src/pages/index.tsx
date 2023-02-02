@@ -43,7 +43,7 @@ const Home: NextPage = () => {
         const myCommunityIds = communityStateValue.mySnippets.map(
           (snippet) => snippet.communityId
         );
-        // Getting 2 posts from 3 communities that user has joined
+
         const postQuery = query(
           collection(firestore, "posts"),
           where("communityId", "in", myCommunityIds),
