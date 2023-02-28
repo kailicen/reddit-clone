@@ -23,6 +23,7 @@ import useSelectFile from "../../hooks/useSelectFile";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { useSetRecoilState } from "recoil";
+import { authModalState } from "@/src/atoms/authModalAtom";
 
 type AboutProps = {
   communityData: Community;
@@ -34,6 +35,8 @@ const About: React.FC<AboutProps> = ({ communityData }) => {
   const { selectedFile, setSelectedFile, onSelectFile } = useSelectFile();
   const [uploadingImage, setUploadingImage] = useState(false);
   const setCommunityStateValue = useSetRecoilState(communityState);
+  const setAuthModalState = useSetRecoilState(authModalState);
+  const router = useRouter();
 
   const onUpdateImage = async () => {
     if (!selectedFile) return;
@@ -57,6 +60,18 @@ const About: React.FC<AboutProps> = ({ communityData }) => {
       console.log("onUpdateImage error", error);
     }
     setUploadingImage(false);
+  };
+
+  const onClick = () => {
+    if (!user) {
+      setAuthModalState({ open: true, view: "login" });
+      return;
+    }
+
+    if (communityData.id) {
+      router.push(`/r/${communityData.id}/submit`);
+      return;
+    }
   };
 
   return (
@@ -104,11 +119,9 @@ const About: React.FC<AboutProps> = ({ communityData }) => {
               </Text>
             )}
           </Flex>
-          <Link href={`/r/${communityData.id}/submit`}>
-            <Button mt={3} height="30px">
-              Create Post
-            </Button>
-          </Link>
+          <Button mt={3} height="30px" onClick={onClick}>
+            Create Post
+          </Button>
           {user?.uid === communityData.creatorId && (
             <>
               <Divider />

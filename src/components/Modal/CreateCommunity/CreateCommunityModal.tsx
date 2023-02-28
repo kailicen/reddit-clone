@@ -60,7 +60,7 @@ const CreateCommunityModal: React.FC<CreateCommunityModalProps> = ({
   const handleCreateCommunity = async () => {
     if (error) setError("");
     // Validate the community
-    const format = /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+    const format = /[ `!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?~]/;
     if (format.test(communityName) || communityName.length < 3) {
       setError(
         "Community names must be between 3-21 characters, and can only contain letters, numbers, or underscores"
@@ -98,7 +98,7 @@ const CreateCommunityModal: React.FC<CreateCommunityModalProps> = ({
 
       handleClose();
       toggleMenuOpen();
-      router.push(`r/${communityName}`);
+      router.push(`/r/${communityName}`);
     } catch (error: any) {
       console.log("handleCreateCommunity error", error);
       setError(error.message);

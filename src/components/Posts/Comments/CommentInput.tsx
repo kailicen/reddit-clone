@@ -52,6 +52,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
             bg="gray.100"
             p="6px 8px"
             borderRadius="0px 0px 4px 4px"
+            zIndex={1}
           >
             <Button
               height="26px"
