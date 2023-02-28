@@ -131,13 +131,17 @@ const Recommendations: React.FC = () => {
                         </span>
                       </Flex>
                     </Flex>
-                    <Box position="absolute" right="10px">
+                    <Box
+                      position="absolute"
+                      right="10px"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         height="22px"
                         fontSize="8pt"
                         variant={isJoined ? "outline" : "solid"}
                         onClick={(event) => {
-                          event.stopPropagation();
+                          event.preventDefault();
                           onJoinOrLeaveCommunity(item, isJoined);
                         }}
                       >
